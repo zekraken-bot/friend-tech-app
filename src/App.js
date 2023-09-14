@@ -101,12 +101,12 @@ function App() {
     } else {
       adjustedStartTime = initialStartTime;
     }
-
     setTimeframe(`${adjustedStartTime.toLocaleString()} - ${endTime.toLocaleString()}`);
+    // eslint-disable-next-line
   }, [uniqueDataState]);
   return (
     <div className="App">
-      <h1>Friend.Tech Rolling 5 Minute Data</h1>
+      <h1>Friend.Tech Rolling 5 Minute Global Data</h1>
       <h2>Timeframe: {timeframe} updates every 15secs</h2>
       <div className="table-container">
         <table className="data-table">
