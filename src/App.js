@@ -101,7 +101,7 @@ function App() {
       <h1>Friend.Tech Rolling 5 Minute Global Data</h1>
       <h2>
         Timeframe: {timeframe} | updates every 15secs | created by{" "}
-        <a target="_blank" href="https://twitter.com/The_Krake">
+        <a href="https://twitter.com/The_Krake" target="_blank" rel="noopener noreferrer">
           @ZeKraken
         </a>
       </h2>
