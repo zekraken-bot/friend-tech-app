@@ -11,11 +11,7 @@ function App() {
 
   const fetchData = async () => {
     try {
-      const headers = {
-        Authorization:
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiMHhiNWM4MzI3YmVmMWI2ODZkMzY3MjJkY2RjZGNkN2M1MDdlY2ZkY2JiIiwiaWF0IjoxNjk0NDY2OTYyLCJleHAiOjE2OTcwNTg5NjJ9.rseOrFtul-4lNeVDnPSmYOej1nklgOpCekptBqNlkns",
-      };
-      const response = await fetch("https://prod-api.kosetto.com/global-activity", { headers });
+      const response = await fetch("https://proxyglobalactivity.zekraken00.workers.dev/");
       const jsonData = await response.json();
 
       setData((prevData) => [...prevData, ...jsonData.events]);
