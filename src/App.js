@@ -99,7 +99,12 @@ function App() {
   return (
     <div className="App">
       <h1>Friend.Tech Rolling 5 Minute Global Data</h1>
-      <h2>Timeframe: {timeframe} updates every 15secs</h2>
+      <h2>
+        Timeframe: {timeframe} | updates every 15secs | created by{" "}
+        <a target="_blank" href="https://twitter.com/The_Krake">
+          @ZeKraken
+        </a>
+      </h2>
       <div className="table-container">
         <table className="data-table">
           <thead>
