@@ -56,8 +56,8 @@ function App() {
     const now = Date.now();
     const fiveMinutesAgo = now - 5 * 60 * 1000;
 
-    let newDataMap = { ...dataMap };
-    let newDataMap2 = { ...dataMap2 };
+    let newDataMap = {};
+    let newDataMap2 = {};
 
     uniqueDataState.forEach((event) => {
       if (event.isBuy && event.createdAt > fiveMinutesAgo) {
