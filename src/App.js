@@ -114,7 +114,7 @@ function App() {
               <tr key={index}>
                 <td>{name}</td>
                 <td>{data.count}</td>
-                <td>{data.ethAmount}</td>
+                <td>{parseFloat(data.ethAmount).toFixed(6)}</td>
               </tr>
             ))}
           </tbody>
@@ -132,7 +132,7 @@ function App() {
               <tr key={index}>
                 <td>{trader}</td>
                 <td>{data2.count}</td>
-                <td>{data2.ethAmount}</td>
+                <td>{parseFloat(data2.ethAmount).toFixed(6)}</td>
               </tr>
             ))}
           </tbody>
