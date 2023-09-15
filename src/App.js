@@ -3,9 +3,7 @@ import "./App.css";
 
 function App() {
   const [data, setData] = useState([]);
-  const [dataMap, setDataMap] = useState({});
   const [sortedData, setSortedData] = useState([]);
-  const [dataMap2, setDataMap2] = useState({});
   const [sortedData2, setSortedData2] = useState([]);
   const [timeframe, setTimeframe] = useState("");
   const [initialStartTime] = useState(new Date());
@@ -84,10 +82,8 @@ function App() {
     const top25 = sorted.slice(0, 25);
     const top25_2 = sorted2.slice(0, 25);
 
-    setDataMap(newDataMap);
     setSortedData(top25);
 
-    setDataMap2(newDataMap2);
     setSortedData2(top25_2);
 
     console.log(uniqueDataState);
