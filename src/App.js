@@ -3,9 +3,7 @@ import "./App.css";
 
 function App() {
   const [data, setData] = useState([]);
-  const [dataMap, setDataMap] = useState({});
   const [sortedData, setSortedData] = useState([]);
-  const [dataMap2, setDataMap2] = useState({});
   const [sortedData2, setSortedData2] = useState([]);
   const [timeframe, setTimeframe] = useState("");
   const [initialStartTime] = useState(new Date());
@@ -13,11 +11,7 @@ function App() {
 
   const fetchData = async () => {
     try {
-      const headers = {
-        Authorization:
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZGRyZXNzIjoiMHhiNWM4MzI3YmVmMWI2ODZkMzY3MjJkY2RjZGNkN2M1MDdlY2ZkY2JiIiwiaWF0IjoxNjk0NDY2OTYyLCJleHAiOjE2OTcwNTg5NjJ9.rseOrFtul-4lNeVDnPSmYOej1nklgOpCekptBqNlkns",
-      };
-      const response = await fetch("https://prod-api.kosetto.com/global-activity", { headers });
+      const response = await fetch("https://proxyglobalactivity.zekraken00.workers.dev/");
       const jsonData = await response.json();
 
       setData((prevData) => [...prevData, ...jsonData.events]);
@@ -56,8 +50,8 @@ function App() {
     const now = Date.now();
     const fiveMinutesAgo = now - 5 * 60 * 1000;
 
-    let newDataMap = { ...dataMap };
-    let newDataMap2 = { ...dataMap2 };
+    let newDataMap = {};
+    let newDataMap2 = {};
 
     uniqueDataState.forEach((event) => {
       if (event.isBuy && event.createdAt > fiveMinutesAgo) {
@@ -84,10 +78,8 @@ function App() {
     const top25 = sorted.slice(0, 25);
     const top25_2 = sorted2.slice(0, 25);
 
-    setDataMap(newDataMap);
     setSortedData(top25);
 
-    setDataMap2(newDataMap2);
     setSortedData2(top25_2);
 
     console.log(uniqueDataState);
