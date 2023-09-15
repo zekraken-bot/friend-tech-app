@@ -8,7 +8,9 @@ table {
   border-collapse: collapse;
   margin-top: 20px;
 }
-
+h2 {
+  font-size: 22px;
+}
 th, td {
   border: 1px solid #ccc;
   padding: 6px;
