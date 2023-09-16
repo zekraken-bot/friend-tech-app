@@ -8,6 +8,7 @@ function App() {
   const [timeframe, setTimeframe] = useState("");
   const [initialStartTime] = useState(new Date());
   const [uniqueDataState, setUniqueDataState] = useState([]);
+  const [darkMode, setDarkMode] = useState(true);
 
   const fetchData = async () => {
     try {
@@ -57,16 +58,20 @@ function App() {
       if (event.isBuy && event.createdAt > fiveMinutesAgo) {
         const name = event.subject.name;
         const ethAmount = event.ethAmount / 10 ** 18;
+        const susername = event.subject.username;
 
         newDataMap[name] = newDataMap[name] || { count: 0, ethAmount: 0 };
         newDataMap[name].count += 1;
         newDataMap[name].ethAmount += ethAmount;
+        newDataMap[name].susername = susername;
 
         const trader = event.trader.name;
+        const tusername = event.trader.username;
 
         newDataMap2[trader] = newDataMap2[trader] || { count: 0, ethAmount: 0 };
         newDataMap2[trader].count += 1;
         newDataMap2[trader].ethAmount += ethAmount;
+        newDataMap2[trader].tusername = tusername;
       }
     });
 
@@ -97,7 +102,10 @@ function App() {
     // eslint-disable-next-line
   }, [uniqueDataState]);
   return (
-    <div className="App">
+    <div className={`App ${darkMode ? "dark-mode" : ""}`}>
+      <div>
+        <button onClick={() => setDarkMode(!darkMode)}>Toggle {darkMode ? "Light" : "Dark"} Mode</button>
+      </div>
       <h1>Friend.Tech Rolling 5 Minute Global Data</h1>
       <h2>
         Timeframe: {timeframe} | updates every 15secs | created by{" "}
@@ -110,6 +118,7 @@ function App() {
           <thead>
             <tr>
               <th>Top 25 Names Purchased</th>
+              <th>Twitter</th>
               <th>Count</th>
               <th>Total ETH Purchased</th>
             </tr>
@@ -118,6 +127,11 @@ function App() {
             {sortedData.map(([name, data], index) => (
               <tr key={index}>
                 <td>{name}</td>
+                <td>
+                  <a href={`https://twitter.com/${data.susername}`} target="_blank" rel="noopener noreferrer">
+                    @{data.susername}
+                  </a>
+                </td>
                 <td>{data.count}</td>
                 <td>{parseFloat(data.ethAmount).toFixed(6)}</td>
               </tr>
@@ -128,6 +142,7 @@ function App() {
           <thead>
             <tr>
               <th>Top 25 Trader Names</th>
+              <th>Twitter</th>
               <th>Count</th>
               <th>Total ETH spent</th>
             </tr>
@@ -136,6 +151,11 @@ function App() {
             {sortedData2.map(([trader, data2], index) => (
               <tr key={index}>
                 <td>{trader}</td>
+                <td>
+                  <a href={`https://twitter.com/${data2.tusername}`} target="_blank" rel="noopener noreferrer">
+                    @{data2.tusername}
+                  </a>
+                </td>
                 <td>{data2.count}</td>
                 <td>{parseFloat(data2.ethAmount).toFixed(6)}</td>
               </tr>
