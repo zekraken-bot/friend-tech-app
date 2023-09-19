@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import { ethers } from "ethers";
 
 function App() {
   const [data, setData] = useState([]);
@@ -9,6 +10,35 @@ function App() {
   const [initialStartTime] = useState(new Date());
   const [uniqueDataState, setUniqueDataState] = useState([]);
   const [darkMode, setDarkMode] = useState(true);
+  const [addressToBalance, setAddressToBalance] = useState({});
+  const [addressToBalance2, setAddressToBalance2] = useState({});
+
+  const fetchBalances = async () => {
+    const provider = new ethers.providers.JsonRpcProvider("https://1rpc.io/base");
+
+    // Get a unique set of addresses
+    const addresses = [...new Set(uniqueDataState.map((event) => event.subject.address))];
+    const addresses2 = [...new Set(uniqueDataState.map((event) => event.trader.address))];
+
+    // Fetch balances in parallel using Promise.all
+    const balances = await Promise.all(addresses.map((address) => provider.getBalance(address)));
+    const balances2 = await Promise.all(addresses2.map((address) => provider.getBalance(address)));
+
+    // Convert big number balances to ether and map to addresses
+    const updatedAddressToBalance = addresses.reduce((acc, address, index) => {
+      acc[address] = ethers.utils.formatEther(balances[index]);
+      return acc;
+    }, {});
+
+    const updatedAddressToBalance2 = addresses2.reduce((acc, address, index) => {
+      acc[address] = ethers.utils.formatEther(balances2[index]);
+      return acc;
+    }, {});
+
+    // Update the state
+    setAddressToBalance(updatedAddressToBalance);
+    setAddressToBalance2(updatedAddressToBalance2);
+  };
 
   const fetchData = async () => {
     try {
@@ -43,6 +73,11 @@ function App() {
   }, []);
 
   useEffect(() => {
+    fetchBalances();
+    // eslint-disable-next-line
+  }, [data]);
+
+  useEffect(() => {
     const uniqueData = filterDuplicates(data);
     setUniqueDataState(uniqueData);
   }, [data]);
@@ -63,7 +98,9 @@ function App() {
         newDataMap[name] = newDataMap[name] || { count: 0, ethAmount: 0 };
         newDataMap[name].count += 1;
         newDataMap[name].ethAmount += ethAmount;
+        newDataMap[name].ethPrice = ethAmount;
         newDataMap[name].susername = susername;
+        newDataMap[name].balance = parseFloat(addressToBalance[event.subject.address] || 0);
 
         const trader = event.trader.name;
         const tusername = event.trader.username;
@@ -72,6 +109,7 @@ function App() {
         newDataMap2[trader].count += 1;
         newDataMap2[trader].ethAmount += ethAmount;
         newDataMap2[trader].tusername = tusername;
+        newDataMap2[trader].balance2 = parseFloat(addressToBalance2[event.trader.address] || 0);
       }
     });
 
@@ -88,6 +126,7 @@ function App() {
     setSortedData2(top25_2);
 
     console.log(uniqueDataState);
+
     // Adjusted timeframe calculation
     const endTime = new Date();
     let adjustedStartTime;
@@ -99,6 +138,7 @@ function App() {
       adjustedStartTime = initialStartTime;
     }
     setTimeframe(`${adjustedStartTime.toLocaleString()} - ${endTime.toLocaleString()}`);
+
     // eslint-disable-next-line
   }, [uniqueDataState]);
   return (
@@ -120,7 +160,9 @@ function App() {
               <th>Top 25 Names Purchased</th>
               <th>Twitter</th>
               <th>Count</th>
-              <th>Total ETH Purchased</th>
+              <th>Total Purchased Ξ</th>
+              <th>Last Price Ξ</th>
+              <th>Wallet Balance Ξ</th>
             </tr>
           </thead>
           <tbody>
@@ -134,6 +176,8 @@ function App() {
                 </td>
                 <td>{data.count}</td>
                 <td>{parseFloat(data.ethAmount).toFixed(6)}</td>
+                <td>{parseFloat(data.ethPrice).toFixed(6)}</td>
+                <td>{parseFloat(data.balance).toFixed(6)}</td>
               </tr>
             ))}
           </tbody>
@@ -144,7 +188,8 @@ function App() {
               <th>Top 25 Trader Names</th>
               <th>Twitter</th>
               <th>Count</th>
-              <th>Total ETH spent</th>
+              <th>Total Spent Ξ</th>
+              <th>Wallet Balance Ξ</th>
             </tr>
           </thead>
           <tbody>
@@ -158,6 +203,7 @@ function App() {
                 </td>
                 <td>{data2.count}</td>
                 <td>{parseFloat(data2.ethAmount).toFixed(6)}</td>
+                <td>{parseFloat(data2.balance2).toFixed(6)}</td>
               </tr>
             ))}
           </tbody>
