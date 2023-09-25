@@ -14,7 +14,7 @@ function App() {
   const [lastFetchedAddresses, setLastFetchedAddresses] = useState(new Set());
 
   const fetchBalances = async () => {
-    const provider = new ethers.providers.JsonRpcProvider("https://1rpc.io/base");
+    const provider = new ethers.providers.JsonRpcProvider("https://base-mainnet.g.alchemy.com/v2/znOtZmP-nPzjmnAdAkp3g2l5AEoW5lx_");
 
     // Get a unique set of addresses
     const allAddresses = [...new Set(uniqueDataState.map((event) => event.subject.address)), ...new Set(uniqueDataState.map((event) => event.trader.address))];
