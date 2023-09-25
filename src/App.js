@@ -96,6 +96,7 @@ function App() {
         const susername = event.subject.username;
 
         newDataMap[name] = newDataMap[name] || { count: 0, ethAmount: 0 };
+        newDataMap[name].address = event.subject.address;
         newDataMap[name].count += 1;
         newDataMap[name].ethAmount += ethAmount;
         newDataMap[name].ethPrice = ethAmount;
@@ -106,6 +107,7 @@ function App() {
         const tusername = event.trader.username;
 
         newDataMap2[trader] = newDataMap2[trader] || { count: 0, ethAmount: 0 };
+        newDataMap2[trader].address = event.trader.address;
         newDataMap2[trader].count += 1;
         newDataMap2[trader].ethAmount += ethAmount;
         newDataMap2[trader].tusername = tusername;
@@ -168,7 +170,11 @@ function App() {
           <tbody>
             {sortedData.map(([name, data], index) => (
               <tr key={index}>
-                <td>{name}</td>
+                <td>
+                  <a href={`https://basescan.org/address/${data.address}`} target="_blank" rel="noopener noreferrer">
+                    {name}
+                  </a>
+                </td>
                 <td>
                   <a href={`https://twitter.com/${data.susername}`} target="_blank" rel="noopener noreferrer">
                     @{data.susername}
@@ -195,7 +201,11 @@ function App() {
           <tbody>
             {sortedData2.map(([trader, data2], index) => (
               <tr key={index}>
-                <td>{trader}</td>
+                <td>
+                  <a href={`https://basescan.org/address/${data2.address}`} target="_blank" rel="noopener noreferrer">
+                    {trader}
+                  </a>
+                </td>
                 <td>
                   <a href={`https://twitter.com/${data2.tusername}`} target="_blank" rel="noopener noreferrer">
                     @{data2.tusername}
