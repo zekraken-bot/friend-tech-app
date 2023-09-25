@@ -11,33 +11,33 @@ function App() {
   const [uniqueDataState, setUniqueDataState] = useState([]);
   const [darkMode, setDarkMode] = useState(true);
   const [addressToBalance, setAddressToBalance] = useState({});
-  const [addressToBalance2, setAddressToBalance2] = useState({});
+  const [lastFetchedAddresses, setLastFetchedAddresses] = useState(new Set());
 
   const fetchBalances = async () => {
     const provider = new ethers.providers.JsonRpcProvider("https://1rpc.io/base");
 
     // Get a unique set of addresses
-    const addresses = [...new Set(uniqueDataState.map((event) => event.subject.address))];
-    const addresses2 = [...new Set(uniqueDataState.map((event) => event.trader.address))];
+    const allAddresses = [...new Set(uniqueDataState.map((event) => event.subject.address)), ...new Set(uniqueDataState.map((event) => event.trader.address))];
 
-    // Fetch balances in parallel using Promise.all
-    const balances = await Promise.all(addresses.map((address) => provider.getBalance(address)));
-    const balances2 = await Promise.all(addresses2.map((address) => provider.getBalance(address)));
+    const newAddresses = allAddresses.filter((address) => !lastFetchedAddresses.has(address));
+
+    if (newAddresses.length === 0) {
+      // No new addresses to fetch balances for
+      return;
+    }
+
+    const balances = await Promise.all(newAddresses.map((address) => provider.getBalance(address)));
 
     // Convert big number balances to ether and map to addresses
-    const updatedAddressToBalance = addresses.reduce((acc, address, index) => {
-      acc[address] = ethers.utils.formatEther(balances[index]);
-      return acc;
-    }, {});
+    const updatedAddressToBalance = { ...addressToBalance }; // Copy previous balances
+    newAddresses.forEach((address, index) => {
+      updatedAddressToBalance[address] = ethers.utils.formatEther(balances[index]);
+    });
 
-    const updatedAddressToBalance2 = addresses2.reduce((acc, address, index) => {
-      acc[address] = ethers.utils.formatEther(balances2[index]);
-      return acc;
-    }, {});
-
-    // Update the state
     setAddressToBalance(updatedAddressToBalance);
-    setAddressToBalance2(updatedAddressToBalance2);
+
+    // Update last fetched addresses set
+    setLastFetchedAddresses(new Set(allAddresses));
   };
 
   const fetchData = async () => {
@@ -109,7 +109,7 @@ function App() {
         newDataMap2[trader].count += 1;
         newDataMap2[trader].ethAmount += ethAmount;
         newDataMap2[trader].tusername = tusername;
-        newDataMap2[trader].balance2 = parseFloat(addressToBalance2[event.trader.address] || 0);
+        newDataMap2[trader].balance2 = parseFloat(addressToBalance[event.trader.address] || 0);
       }
     });
 
