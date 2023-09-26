@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import { ethers } from "ethers";
 
 function App() {
   const [data, setData] = useState([]);
@@ -9,6 +10,35 @@ function App() {
   const [initialStartTime] = useState(new Date());
   const [uniqueDataState, setUniqueDataState] = useState([]);
   const [darkMode, setDarkMode] = useState(true);
+  const [addressToBalance, setAddressToBalance] = useState({});
+  const [lastFetchedAddresses, setLastFetchedAddresses] = useState(new Set());
+
+  const fetchBalances = async () => {
+    const provider = new ethers.providers.JsonRpcProvider("https://1rpc.io/base");
+
+    // Get a unique set of addresses
+    const allAddresses = [...new Set(uniqueDataState.map((event) => event.subject.address)), ...new Set(uniqueDataState.map((event) => event.trader.address))];
+
+    const newAddresses = allAddresses.filter((address) => !lastFetchedAddresses.has(address));
+
+    if (newAddresses.length === 0) {
+      // No new addresses to fetch balances for
+      return;
+    }
+
+    const balances = await Promise.all(newAddresses.map((address) => provider.getBalance(address)));
+
+    // Convert big number balances to ether and map to addresses
+    const updatedAddressToBalance = { ...addressToBalance }; // Copy previous balances
+    newAddresses.forEach((address, index) => {
+      updatedAddressToBalance[address] = ethers.utils.formatEther(balances[index]);
+    });
+
+    setAddressToBalance(updatedAddressToBalance);
+
+    // Update last fetched addresses set
+    setLastFetchedAddresses(new Set(allAddresses));
+  };
 
   const fetchData = async () => {
     try {
@@ -43,6 +73,11 @@ function App() {
   }, []);
 
   useEffect(() => {
+    fetchBalances();
+    // eslint-disable-next-line
+  }, [data]);
+
+  useEffect(() => {
     const uniqueData = filterDuplicates(data);
     setUniqueDataState(uniqueData);
   }, [data]);
@@ -61,17 +96,22 @@ function App() {
         const susername = event.subject.username;
 
         newDataMap[name] = newDataMap[name] || { count: 0, ethAmount: 0 };
+        newDataMap[name].address = event.subject.address;
         newDataMap[name].count += 1;
         newDataMap[name].ethAmount += ethAmount;
+        newDataMap[name].ethPrice = ethAmount;
         newDataMap[name].susername = susername;
+        newDataMap[name].balance = parseFloat(addressToBalance[event.subject.address] || 0);
 
         const trader = event.trader.name;
         const tusername = event.trader.username;
 
         newDataMap2[trader] = newDataMap2[trader] || { count: 0, ethAmount: 0 };
+        newDataMap2[trader].address = event.trader.address;
         newDataMap2[trader].count += 1;
         newDataMap2[trader].ethAmount += ethAmount;
         newDataMap2[trader].tusername = tusername;
+        newDataMap2[trader].balance2 = parseFloat(addressToBalance[event.trader.address] || 0);
       }
     });
 
@@ -88,6 +128,7 @@ function App() {
     setSortedData2(top25_2);
 
     console.log(uniqueDataState);
+
     // Adjusted timeframe calculation
     const endTime = new Date();
     let adjustedStartTime;
@@ -99,6 +140,7 @@ function App() {
       adjustedStartTime = initialStartTime;
     }
     setTimeframe(`${adjustedStartTime.toLocaleString()} - ${endTime.toLocaleString()}`);
+
     // eslint-disable-next-line
   }, [uniqueDataState]);
   return (
@@ -120,13 +162,19 @@ function App() {
               <th>Top 25 Names Purchased</th>
               <th>Twitter</th>
               <th>Count</th>
-              <th>Total ETH Purchased</th>
+              <th>Total Purchased Ξ</th>
+              <th>Last Price Ξ</th>
+              <th>Wallet Balance Ξ</th>
             </tr>
           </thead>
           <tbody>
             {sortedData.map(([name, data], index) => (
               <tr key={index}>
-                <td>{name}</td>
+                <td>
+                  <a href={`https://basescan.org/address/${data.address}`} target="_blank" rel="noopener noreferrer">
+                    {name}
+                  </a>
+                </td>
                 <td>
                   <a href={`https://twitter.com/${data.susername}`} target="_blank" rel="noopener noreferrer">
                     @{data.susername}
@@ -134,6 +182,8 @@ function App() {
                 </td>
                 <td>{data.count}</td>
                 <td>{parseFloat(data.ethAmount).toFixed(6)}</td>
+                <td>{parseFloat(data.ethPrice).toFixed(6)}</td>
+                <td>{parseFloat(data.balance).toFixed(6)}</td>
               </tr>
             ))}
           </tbody>
@@ -144,13 +194,18 @@ function App() {
               <th>Top 25 Trader Names</th>
               <th>Twitter</th>
               <th>Count</th>
-              <th>Total ETH spent</th>
+              <th>Total Spent Ξ</th>
+              <th>Wallet Balance Ξ</th>
             </tr>
           </thead>
           <tbody>
             {sortedData2.map(([trader, data2], index) => (
               <tr key={index}>
-                <td>{trader}</td>
+                <td>
+                  <a href={`https://basescan.org/address/${data2.address}`} target="_blank" rel="noopener noreferrer">
+                    {trader}
+                  </a>
+                </td>
                 <td>
                   <a href={`https://twitter.com/${data2.tusername}`} target="_blank" rel="noopener noreferrer">
                     @{data2.tusername}
@@ -158,6 +213,7 @@ function App() {
                 </td>
                 <td>{data2.count}</td>
                 <td>{parseFloat(data2.ethAmount).toFixed(6)}</td>
+                <td>{parseFloat(data2.balance2).toFixed(6)}</td>
               </tr>
             ))}
           </tbody>
