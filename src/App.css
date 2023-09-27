@@ -53,3 +53,15 @@ th {
 .dark-mode a:visited {
   color: #a9a9a9; /* Darker light gray */
 }
+
+.small-button {
+  font-size: 10px;
+  padding: 2px 5px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.high-balance {
+  background-color: #b4752d;
+}

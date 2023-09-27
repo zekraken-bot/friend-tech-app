@@ -173,6 +173,9 @@ function App() {
                 <td>
                   <a href={`https://basescan.org/address/${data.address}`} target="_blank" rel="noopener noreferrer">
                     {name}
+                  </a>{" "}
+                  <a href={`https://www.friend.tech/rooms/${data.address}`} target="_blank" rel="noopener noreferrer">
+                    <button className="small-button">🔗</button>
                   </a>
                 </td>
                 <td>
@@ -183,7 +186,7 @@ function App() {
                 <td>{data.count}</td>
                 <td>{parseFloat(data.ethAmount).toFixed(6)}</td>
                 <td>{parseFloat(data.ethPrice).toFixed(6)}</td>
-                <td>{parseFloat(data.balance).toFixed(6)}</td>
+                <td className={data.balance > 5 ? "high-balance" : ""}>{parseFloat(data.balance).toFixed(6)}</td>
               </tr>
             ))}
           </tbody>
@@ -204,6 +207,9 @@ function App() {
                 <td>
                   <a href={`https://basescan.org/address/${data2.address}`} target="_blank" rel="noopener noreferrer">
                     {trader}
+                  </a>{" "}
+                  <a href={`https://www.friend.tech/rooms/${data2.address}`} target="_blank" rel="noopener noreferrer">
+                    <button className="small-button">🔗</button>
                   </a>
                 </td>
                 <td>
@@ -213,7 +219,7 @@ function App() {
                 </td>
                 <td>{data2.count}</td>
                 <td>{parseFloat(data2.ethAmount).toFixed(6)}</td>
-                <td>{parseFloat(data2.balance2).toFixed(6)}</td>
+                <td className={data2.balance2 > 5 ? "high-balance" : ""}>{parseFloat(data2.balance2).toFixed(6)}</td>
               </tr>
             ))}
           </tbody>
