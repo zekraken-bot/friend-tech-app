@@ -24,21 +24,18 @@ function App() {
     const newAddresses = allAddresses.filter((address) => !lastFetchedAddresses.has(address));
 
     if (newAddresses.length === 0) {
-      // No new addresses to fetch balances for
       return;
     }
 
     const balances = await Promise.all(newAddresses.map((address) => provider.getBalance(address)));
 
     // Convert big number balances to ether and map to addresses
-    const updatedAddressToBalance = { ...addressToBalance }; // Copy previous balances
+    const updatedAddressToBalance = { ...addressToBalance };
     newAddresses.forEach((address, index) => {
       updatedAddressToBalance[address] = ethers.utils.formatEther(balances[index]);
     });
 
     setAddressToBalance(updatedAddressToBalance);
-
-    // Update last fetched addresses set
     setLastFetchedAddresses(new Set(allAddresses));
   };
 
@@ -64,7 +61,7 @@ function App() {
     // Fetch all data simultaneously using Promise.all
     const allData = await Promise.all(allAddresses.map((address) => fetchDataForAddress(address)));
 
-    const updatedAddressToPortfolioValue = { ...addressToPortfolioValue }; // Initialize this variable
+    const updatedAddressToPortfolioValue = { ...addressToPortfolioValue };
     const updatedAddressToDisplayPrice = { ...addressToDisplayPrice };
 
     allAddresses.forEach((address, index) => {
@@ -176,7 +173,7 @@ function App() {
 
     // If more than 5 minutes have passed since initialStartTime, roll forward by 30 seconds
     if (now - initialStartTime.getTime() > 5 * 60 * 1000) {
-      adjustedStartTime = new Date(endTime.getTime() - 5 * 60 * 1000 + 30 * 1000); // Add 30 seconds
+      adjustedStartTime = new Date(endTime.getTime() - 5 * 60 * 1000 + 30 * 1000);
     } else {
       adjustedStartTime = initialStartTime;
     }
