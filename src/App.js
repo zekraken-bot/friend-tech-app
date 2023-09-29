@@ -13,6 +13,7 @@ function App() {
   const [addressToBalance, setAddressToBalance] = useState({});
   const [lastFetchedAddresses, setLastFetchedAddresses] = useState(new Set());
   const [addressToPortfolioValue, setAddressToPortfolioValue] = useState({});
+  const [addressToDisplayPrice, setAddressToDisplayPrice] = useState({});
 
   const fetchBalances = async () => {
     const provider = new ethers.providers.JsonRpcProvider("https://1rpc.io/base");
@@ -46,22 +47,33 @@ function App() {
     const traderAddresses = sortedData2.map(([name, data]) => data.address);
     const allAddresses = [...new Set([...subjectAddresses, ...traderAddresses])];
 
-    const fetchPortfolioValue = async (address) => {
-      const response = await fetch(`https://prod-api.kosetto.com/wallet-info/${address}`);
-      const json = await response.json();
-      console.log(address, ",", json);
-      return json.portfolioValue / 10 ** 18;
+    const fetchDataForAddress = async (address) => {
+      const walletInfoResponse = await fetch(`https://prod-api.kosetto.com/wallet-info/${address}`);
+      const walletInfoJson = await walletInfoResponse.json();
+
+      const userResponse = await fetch(`https://prod-api.kosetto.com/users/${address}`);
+      const userJson = await userResponse.json();
+
+      //console.log(address, ",", walletInfoJson);
+      return {
+        portfolioValue: walletInfoJson.portfolioValue / 10 ** 18,
+        displayPrice: userJson.displayPrice / 10 ** 18,
+      };
     };
 
-    // Fetch all portfolio values simultaneously using Promise.all
-    const portfolioValues = await Promise.all(allAddresses.map((address) => fetchPortfolioValue(address)));
+    // Fetch all data simultaneously using Promise.all
+    const allData = await Promise.all(allAddresses.map((address) => fetchDataForAddress(address)));
 
-    const updatedAddressToPortfolioValue = { ...addressToPortfolioValue };
+    const updatedAddressToPortfolioValue = { ...addressToPortfolioValue }; // Initialize this variable
+    const updatedAddressToDisplayPrice = { ...addressToDisplayPrice };
+
     allAddresses.forEach((address, index) => {
-      updatedAddressToPortfolioValue[address] = portfolioValues[index];
+      updatedAddressToPortfolioValue[address] = allData[index].portfolioValue;
+      updatedAddressToDisplayPrice[address] = allData[index].displayPrice;
     });
 
     setAddressToPortfolioValue(updatedAddressToPortfolioValue);
+    setAddressToDisplayPrice(updatedAddressToDisplayPrice);
   };
 
   const fetchData = async () => {
@@ -189,12 +201,11 @@ function App() {
           <thead>
             <tr>
               <th>Top 25 Names Purchased</th>
-              <th>Twitter</th>
               <th>Count</th>
               <th>Total Purchased Ξ</th>
-              <th>Last Price Ξ</th>
-              <th>Wallet Balance Ξ</th>
+              <th>Key Price Ξ</th>
               <th>Port Value Ξ</th>
+              <th>Wallet Bal Ξ</th>
             </tr>
           </thead>
           <tbody>
@@ -207,17 +218,16 @@ function App() {
                   <a href={`https://www.friend.tech/rooms/${data.address}`} target="_blank" rel="noopener noreferrer">
                     <button className="small-button">🔗</button>
                   </a>
-                </td>
-                <td>
+                  {""}
                   <a href={`https://twitter.com/${data.susername}`} target="_blank" rel="noopener noreferrer">
-                    @{data.susername}
+                    <button className="small-button">🕊️</button>
                   </a>
                 </td>
                 <td>{data.count}</td>
                 <td>{parseFloat(data.ethAmount).toFixed(4)}</td>
                 <td>{parseFloat(data.ethPrice).toFixed(4)}</td>
-                <td className={data.balance > 5 ? "high-balance" : ""}>{parseFloat(data.balance).toFixed(4)}</td>
                 <td>{parseFloat(addressToPortfolioValue[data.address] || 0).toFixed(4)}</td>
+                <td className={data.balance > 5 ? "high-balance" : ""}>{parseFloat(data.balance).toFixed(4)}</td>
               </tr>
             ))}
           </tbody>
@@ -226,11 +236,11 @@ function App() {
           <thead>
             <tr>
               <th>Top 25 Trader Names</th>
-              <th>Twitter</th>
               <th>Count</th>
               <th>Total Spent Ξ</th>
-              <th>Wallet Balance Ξ</th>
+              <th>Key Price Ξ</th>
               <th>Port Value Ξ</th>
+              <th>Wallet Bal Ξ</th>
             </tr>
           </thead>
           <tbody>
@@ -243,16 +253,16 @@ function App() {
                   <a href={`https://www.friend.tech/rooms/${data2.address}`} target="_blank" rel="noopener noreferrer">
                     <button className="small-button">🔗</button>
                   </a>
-                </td>
-                <td>
-                  <a href={`https://twitter.com/${data2.tusername}`} target="_blank" rel="noopener noreferrer">
-                    @{data2.tusername}
+                  {""}
+                  <a href={`https://twitter.com/${data2.susername}`} target="_blank" rel="noopener noreferrer">
+                    <button className="small-button">🕊️</button>
                   </a>
                 </td>
                 <td>{data2.count}</td>
                 <td>{parseFloat(data2.ethAmount).toFixed(4)}</td>
-                <td className={data2.balance2 > 5 ? "high-balance" : ""}>{parseFloat(data2.balance2).toFixed(4)}</td>
+                <td>{parseFloat(addressToDisplayPrice[data2.address] || 0).toFixed(4)}</td>
                 <td>{parseFloat(addressToPortfolioValue[data2.address] || 0).toFixed(4)}</td>
+                <td className={data2.balance2 > 5 ? "high-balance" : ""}>{parseFloat(data2.balance2).toFixed(4)}</td>
               </tr>
             ))}
           </tbody>
