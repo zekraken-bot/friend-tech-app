@@ -12,6 +12,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [addressToBalance, setAddressToBalance] = useState({});
   const [lastFetchedAddresses, setLastFetchedAddresses] = useState(new Set());
+  const [addressToPortfolioValue, setAddressToPortfolioValue] = useState({});
 
   const fetchBalances = async () => {
     const provider = new ethers.providers.JsonRpcProvider("https://1rpc.io/base");
@@ -38,6 +39,29 @@ function App() {
 
     // Update last fetched addresses set
     setLastFetchedAddresses(new Set(allAddresses));
+  };
+
+  const fetchPortfolioValues = async () => {
+    const subjectAddresses = sortedData.map(([name, data]) => data.address);
+    const traderAddresses = sortedData2.map(([name, data]) => data.address);
+    const allAddresses = [...new Set([...subjectAddresses, ...traderAddresses])];
+
+    const fetchPortfolioValue = async (address) => {
+      const response = await fetch(`https://prod-api.kosetto.com/wallet-info/${address}`);
+      const json = await response.json();
+      console.log(address, ",", json);
+      return json.portfolioValue / 10 ** 18;
+    };
+
+    // Fetch all portfolio values simultaneously using Promise.all
+    const portfolioValues = await Promise.all(allAddresses.map((address) => fetchPortfolioValue(address)));
+
+    const updatedAddressToPortfolioValue = { ...addressToPortfolioValue };
+    allAddresses.forEach((address, index) => {
+      updatedAddressToPortfolioValue[address] = portfolioValues[index];
+    });
+
+    setAddressToPortfolioValue(updatedAddressToPortfolioValue);
   };
 
   const fetchData = async () => {
@@ -68,7 +92,7 @@ function App() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 15000);
+    const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -76,6 +100,11 @@ function App() {
     fetchBalances();
     // eslint-disable-next-line
   }, [data]);
+
+  useEffect(() => {
+    fetchPortfolioValues();
+    // eslint-disable-next-line
+  }, [sortedData, sortedData2]);
 
   useEffect(() => {
     const uniqueData = filterDuplicates(data);
@@ -133,9 +162,9 @@ function App() {
     const endTime = new Date();
     let adjustedStartTime;
 
-    // If more than 5 minutes have passed since initialStartTime, roll forward by 15 seconds
+    // If more than 5 minutes have passed since initialStartTime, roll forward by 30 seconds
     if (now - initialStartTime.getTime() > 5 * 60 * 1000) {
-      adjustedStartTime = new Date(endTime.getTime() - 5 * 60 * 1000);
+      adjustedStartTime = new Date(endTime.getTime() - 5 * 60 * 1000 + 30 * 1000); // Add 30 seconds
     } else {
       adjustedStartTime = initialStartTime;
     }
@@ -150,7 +179,7 @@ function App() {
       </div>
       <h1>Friend.Tech Rolling 5 Minute Global Data</h1>
       <h2>
-        Timeframe: {timeframe} | updates every 15secs | created by{" "}
+        Timeframe: {timeframe} | updates every 30secs | created by{" "}
         <a href="https://twitter.com/The_Krake" target="_blank" rel="noopener noreferrer">
           @ZeKraken
         </a>
@@ -165,6 +194,7 @@ function App() {
               <th>Total Purchased Ξ</th>
               <th>Last Price Ξ</th>
               <th>Wallet Balance Ξ</th>
+              <th>Port Value Ξ</th>
             </tr>
           </thead>
           <tbody>
@@ -184,9 +214,10 @@ function App() {
                   </a>
                 </td>
                 <td>{data.count}</td>
-                <td>{parseFloat(data.ethAmount).toFixed(6)}</td>
-                <td>{parseFloat(data.ethPrice).toFixed(6)}</td>
-                <td className={data.balance > 5 ? "high-balance" : ""}>{parseFloat(data.balance).toFixed(6)}</td>
+                <td>{parseFloat(data.ethAmount).toFixed(4)}</td>
+                <td>{parseFloat(data.ethPrice).toFixed(4)}</td>
+                <td className={data.balance > 5 ? "high-balance" : ""}>{parseFloat(data.balance).toFixed(4)}</td>
+                <td>{parseFloat(addressToPortfolioValue[data.address] || 0).toFixed(4)}</td>
               </tr>
             ))}
           </tbody>
@@ -199,6 +230,7 @@ function App() {
               <th>Count</th>
               <th>Total Spent Ξ</th>
               <th>Wallet Balance Ξ</th>
+              <th>Port Value Ξ</th>
             </tr>
           </thead>
           <tbody>
@@ -218,8 +250,9 @@ function App() {
                   </a>
                 </td>
                 <td>{data2.count}</td>
-                <td>{parseFloat(data2.ethAmount).toFixed(6)}</td>
-                <td className={data2.balance2 > 5 ? "high-balance" : ""}>{parseFloat(data2.balance2).toFixed(6)}</td>
+                <td>{parseFloat(data2.ethAmount).toFixed(4)}</td>
+                <td className={data2.balance2 > 5 ? "high-balance" : ""}>{parseFloat(data2.balance2).toFixed(4)}</td>
+                <td>{parseFloat(addressToPortfolioValue[data2.address] || 0).toFixed(4)}</td>
               </tr>
             ))}
           </tbody>
